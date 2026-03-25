@@ -1,0 +1,55 @@
+# github public repo
+name: CodeSecure Security Scan (Public)
+on: [push, pull_request]
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # NO GOOGLE AUTH REQUIRED IF IMAGE IS PUBLIC
+      # NO SETUP GCR REQUIRED IF IMAGE IS PUBLIC
+
+      - name: Run Security Scan
+        id: scanner
+        continue-on-error: true
+        run: |
+          # The image will be pulled automatically without auth if it's public
+          docker run --rm \
+            -u root \
+            -v ${{ github.workspace }}:/workspace \
+            -e GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }} \
+            -e CODESECURE_TOKEN="" \
+            gcr.io/codesecure-479807/codesecure:1.0.21 \
+            scan /workspace \
+            --format sarif \
+            --output /workspace/codesecure_scan_reports \
+            --fail-on critical,high
+
+      - name: Upload Results to GitHub Security Tab
+        if: always() 
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: codesecure_scan_reports
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Save Scan Results as Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: codesecure-report
+          path: codesecure_scan_reports
+          retention-days: 14
+
+      - name: Check Quality Gate
+        if: always() && steps.scanner.outcome == 'failure'
+        run: |
+          echo "❌ Security scan failed quality gate (Critical/High issues found)."
+          exit 1

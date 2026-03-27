@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0 # Needed for Baseline Comparison (Fixed vs New)
 
       - name: Run CodeSecure Scan
-        uses: docker://gcr.io/codesecure-479807/codesecure:1.0.23
+        uses: docker://gcr.io/codesecure-479807/codesecure:1.0.27
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }} # Optional: for AI Grade

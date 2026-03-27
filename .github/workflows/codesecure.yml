@@ -1,4 +1,4 @@
-# github public repo
+# github public repo test
 name: CodeSecure Security Scan (Public)
 on: [push, pull_request]
 

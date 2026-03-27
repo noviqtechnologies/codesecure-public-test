@@ -1,4 +1,4 @@
-name: Test PR Decoration
+name: Test PR Decoration 1
 on:
   pull_request:  # Trigger on PRs to test the decorator
     branches: [ main ]
